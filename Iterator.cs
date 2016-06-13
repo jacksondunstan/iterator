@@ -1,4 +1,10 @@
-﻿using System;
+﻿/// <summary>
+/// Iterator library inspired by the C++ Standard Library's <iterator> and <algorithm>
+/// </summary>
+/// <author>Jackson Dunstan, http://jacksondunstan.com/articles/3471</code>
+/// <license>MIT</license>
+
+using System;
 using System.Collections.Generic;
 
 public struct ArrayIterator<T>
