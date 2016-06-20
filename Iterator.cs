@@ -35,6 +35,11 @@ public static class ArrayIteratorExtensions
 		return it.Array[it.Index];
 	}
 
+	public static void SetCurrent<T>(this ArrayIterator<T> it, T val)
+	{
+		it.Array[it.Index] = val;
+	}
+
 	public static ArrayIterator<T> GetNext<T>(this ArrayIterator<T> it)
 	{
 		it.Index++;
@@ -430,6 +435,162 @@ public static class ArrayIteratorExtensions
 		}
 		return last;
 	}
+
+	public static ArrayIterator<T> Copy<T>(
+		this ArrayIterator<T> first,
+		ArrayIterator<T> last,
+		ArrayIterator<T> result
+	)
+	{
+		while (first.NotEqual(last))
+		{
+			result.SetCurrent(first.GetCurrent());
+			result = result.GetNext();
+			first = first.GetNext();
+		}
+		return result;
+	}
+
+	public static ArrayIterator<T> CopyN<T>(
+		this ArrayIterator<T> first,
+		int n,
+		ArrayIterator<T> result
+	)
+	{
+		while (n > 0)
+		{
+			result.SetCurrent(first.GetCurrent());
+			result = result.GetNext();
+			first = first.GetNext();
+			n--;
+		}
+		return result;
+	}
+
+	public static ArrayIterator<T> CopyIf<T>(
+		this ArrayIterator<T> first,
+		ArrayIterator<T> last,
+		ArrayIterator<T> result,
+		Func<T, bool> pred
+	)
+	{
+		while (first.NotEqual(last))
+		{
+			if (pred(first.GetCurrent()))
+			{
+				result.SetCurrent(first.GetCurrent());
+				result = result.GetNext();
+			}
+			first = first.GetNext();
+		}
+		return result;
+	}
+
+	public static ArrayIterator<T> CopyBackward<T>(
+		this ArrayIterator<T> first,
+		ArrayIterator<T> last,
+		ArrayIterator<T> result
+	)
+	{
+		while (last.NotEqual(first))
+		{
+			result = result.GetPrev();
+			last = last.GetPrev();
+			result.SetCurrent(last.GetCurrent());
+		}
+		return result;
+	}
+
+	public static ArrayIterator<T> SwapRanges<T>(
+		this ArrayIterator<T> first1,
+		ArrayIterator<T> last1,
+		ArrayIterator<T> first2
+	)
+	{
+		while (first1.NotEqual(last1))
+		{
+			Swap(first1, first2);
+			first1 = first1.GetNext();
+			first2 = first2.GetNext();
+		}
+		return first2;
+	}
+	
+	public static void Swap<T>(this ArrayIterator<T> a, ArrayIterator<T> b)
+	{
+		var temp = a.GetCurrent();
+		a.SetCurrent(b.GetCurrent());
+		b.SetCurrent(temp);
+	}
+
+	public static ArrayIterator<T> Transform<T>(
+		this ArrayIterator<T> first1,
+		ArrayIterator<T> last1,
+		ArrayIterator<T> result,
+		Func<T, T> op
+	)
+	{
+		while (first1.NotEqual(last1))
+		{
+			result.SetCurrent(op(first1.GetCurrent()));
+			result = result.GetNext();
+			first1 = first1.GetNext();
+		}
+		return result;
+	}
+
+	public static ArrayIterator<T> Transform<T>(
+		this ArrayIterator<T> first1,
+		ArrayIterator<T> last1,
+		ArrayIterator<T> first2,
+		ArrayIterator<T> result,
+		Func<T, T, T> binaryOp
+	)
+	{
+		while (first1.NotEqual(last1))
+		{
+			result.SetCurrent(binaryOp(first1.GetCurrent(), first2.GetCurrent()));
+			first2 = first2.GetNext();
+			result = result.GetNext();
+			first1 = first1.GetNext();
+		}
+		return result;
+	}
+
+	public static void ReplaceIf<T>(
+		this ArrayIterator<T> first,
+		ArrayIterator<T> last,
+		Func<T, bool> pred,
+		T newValue
+	)
+	{
+		while (first.NotEqual(last))
+		{
+			if (pred(first.GetCurrent()))
+			{
+				first.SetCurrent(newValue);
+
+			}
+			first = first.GetNext();
+		}
+	}
+
+	public static ArrayIterator<T> ReplaceCopyIf<T>(
+		this ArrayIterator<T> first,
+		ArrayIterator<T> last,
+		ArrayIterator<T> result,
+		Func<T, bool> pred,
+		T newValue
+	)
+	{
+		while (first.NotEqual(last))
+		{
+			result.SetCurrent(pred(first.GetCurrent()) ? newValue : first.GetCurrent());
+			first = first.GetNext();
+			result = result.GetNext();
+		}
+		return result;
+	}
 }
 
 public struct ListIterator<T>
@@ -440,24 +601,29 @@ public struct ListIterator<T>
 
 public static class ListIteratorExtensions
 {
-	public static ListIterator<T> Begin<T>(this IList<T> List)
+	public static ListIterator<T> Begin<T>(this IList<T> list)
 	{
-		return new ListIterator<T> { List = List };
+		return new ListIterator<T> { List = list };
 	}
 
-	public static ListIterator<T> End<T>(this IList<T> List)
+	public static ListIterator<T> End<T>(this IList<T> list)
 	{
-		return new ListIterator<T> { List = List, Index = List.Count };
+		return new ListIterator<T> { List = list, Index = list.Count };
 	}
 
-	public static ListIterator<T> IteratorAt<T>(this IList<T> List, int index)
+	public static ListIterator<T> IteratorAt<T>(this IList<T> list, int index)
 	{
-		return new ListIterator<T> { List = List, Index = index };
+		return new ListIterator<T> { List = list, Index = index };
 	}
 
 	public static T GetCurrent<T>(this ListIterator<T> it)
 	{
 		return it.List[it.Index];
+	}
+
+	public static void SetCurrent<T>(this ListIterator<T> it, T val)
+	{
+		it.List[it.Index] = val;
 	}
 
 	public static ListIterator<T> GetNext<T>(this ListIterator<T> it)
@@ -854,5 +1020,161 @@ public static class ListIteratorExtensions
 			first = first.GetNext();
 		}
 		return last;
+	}
+
+	public static ListIterator<T> Copy<T>(
+		this ListIterator<T> first,
+		ListIterator<T> last,
+		ListIterator<T> result
+	)
+	{
+		while (first.NotEqual(last))
+		{
+			result.SetCurrent(first.GetCurrent());
+			result = result.GetNext();
+			first = first.GetNext();
+		}
+		return result;
+	}
+
+	public static ListIterator<T> CopyN<T>(
+		this ListIterator<T> first,
+		int n,
+		ListIterator<T> result
+	)
+	{
+		while (n > 0)
+		{
+			result.SetCurrent(first.GetCurrent());
+			result = result.GetNext();
+			first = first.GetNext();
+			n--;
+		}
+		return result;
+	}
+
+	public static ListIterator<T> CopyIf<T>(
+		this ListIterator<T> first,
+		ListIterator<T> last,
+		ListIterator<T> result,
+		Func<T, bool> pred
+	)
+	{
+		while (first.NotEqual(last))
+		{
+			if (pred(first.GetCurrent()))
+			{
+				result.SetCurrent(first.GetCurrent());
+				result = result.GetNext();
+			}
+			first = first.GetNext();
+		}
+		return result;
+	}
+
+	public static ListIterator<T> CopyBackward<T>(
+		this ListIterator<T> first,
+		ListIterator<T> last,
+		ListIterator<T> result
+	)
+	{
+		while (last.NotEqual(first))
+		{
+			result = result.GetPrev();
+			last = last.GetPrev();
+			result.SetCurrent(last.GetCurrent());
+		}
+		return result;
+	}
+
+	public static ListIterator<T> SwapRanges<T>(
+		this ListIterator<T> first1,
+		ListIterator<T> last1,
+		ListIterator<T> first2
+	)
+	{
+		while (first1.NotEqual(last1))
+		{
+			Swap(first1, first2);
+			first1 = first1.GetNext();
+			first2 = first2.GetNext();
+		}
+		return first2;
+	}
+
+	public static void Swap<T>(this ListIterator<T> a, ListIterator<T> b)
+	{
+		var temp = a.GetCurrent();
+		a.SetCurrent(b.GetCurrent());
+		b.SetCurrent(temp);
+	}
+
+	public static ListIterator<T> Transform<T>(
+		this ListIterator<T> first1,
+		ListIterator<T> last1,
+		ListIterator<T> result,
+		Func<T, T> op
+	)
+	{
+		while (first1.NotEqual(last1))
+		{
+			result.SetCurrent(op(first1.GetCurrent()));
+			result = result.GetNext();
+			first1 = first1.GetNext();
+		}
+		return result;
+	}
+
+	public static ListIterator<T> Transform<T>(
+		this ListIterator<T> first1,
+		ListIterator<T> last1,
+		ListIterator<T> first2,
+		ListIterator<T> result,
+		Func<T, T, T> binaryOp
+	)
+	{
+		while (first1.NotEqual(last1))
+		{
+			result.SetCurrent(binaryOp(first1.GetCurrent(), first2.GetCurrent()));
+			first2 = first2.GetNext();
+			result = result.GetNext();
+			first1 = first1.GetNext();
+		}
+		return result;
+	}
+
+	public static void ReplaceIf<T>(
+		this ListIterator<T> first,
+		ListIterator<T> last,
+		Func<T, bool> pred,
+		T newValue
+	)
+	{
+		while (first.NotEqual(last))
+		{
+			if (pred(first.GetCurrent()))
+			{
+				first.SetCurrent(newValue);
+
+			}
+			first = first.GetNext();
+		}
+	}
+
+	public static ListIterator<T> ReplaceCopyIf<T>(
+		this ListIterator<T> first,
+		ListIterator<T> last,
+		ListIterator<T> result,
+		Func<T, bool> pred,
+		T newValue
+	)
+	{
+		while (first.NotEqual(last))
+		{
+			result.SetCurrent(pred(first.GetCurrent()) ? newValue : first.GetCurrent());
+			first = first.GetNext();
+			result = result.GetNext();
+		}
+		return result;
 	}
 }
