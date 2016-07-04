@@ -591,6 +591,231 @@ public static class ArrayIteratorExtensions
 		}
 		return result;
 	}
+
+	public static ArrayIterator<T> Unique<T>(
+		this ArrayIterator<T> first,
+		ArrayIterator<T> last,
+		Func<T, T, bool> pred
+	)
+	{
+		if (first.IsEqual(last))
+		{
+			return last;
+		}
+
+		var result = first;
+		while ((first = first.GetNext()).NotEqual(last))
+		{
+			if (pred(result.GetCurrent(), first.GetCurrent()) == false)
+			{
+				result = result.GetNext();
+				result.SetCurrent(first.GetCurrent());
+			}
+		}
+		result = result.GetNext();
+		return result;
+	}
+
+	public static ArrayIterator<T> UniqueCopy<T>(
+		this ArrayIterator<T> first,
+		ArrayIterator<T> last,
+		ArrayIterator<T> result,
+		Func<T, T, bool> pred
+	)
+	{
+		if (first.IsEqual(last))
+		{
+			return last;
+		}
+
+		result.SetCurrent(first.GetCurrent());
+		while ((first = first.GetNext()).NotEqual(last))
+		{
+			var val = first.GetCurrent();
+			if (pred(result.GetCurrent(), val) == false)
+			{
+				result = result.GetNext();
+				result.SetCurrent(val);
+			}
+		}
+		result = result.GetNext();
+		return result;
+	}
+
+	public static void Reverse<T>(this ArrayIterator<T> first, ArrayIterator<T> last)
+	{
+		while ((first.NotEqual(last)) && (first.NotEqual((last = last.GetPrev()))))
+		{
+			first.Swap(last);
+			first = first.GetNext();
+		}
+	}
+
+	public static ArrayIterator<T> ReverseCopy<T>(
+		this ArrayIterator<T> first,
+		ArrayIterator<T> last,
+		ArrayIterator<T> result
+	)
+	{
+		while (first.NotEqual(last))
+		{
+			last = last.GetPrev();
+			result.SetCurrent(last.GetCurrent());
+			result = result.GetNext();
+		}
+		return result;
+	}
+
+	public static void Rotate<T>(
+		this ArrayIterator<T> first,
+		ArrayIterator<T> middle,
+		ArrayIterator<T> last
+	)
+	{
+		var next = middle;
+		while (first.NotEqual(last))
+		{
+			first.Swap(next);
+			first = first.GetNext();
+			next = next.GetNext();
+			if (next.IsEqual(last))
+			{
+				next = middle;
+			}
+			else if (first.IsEqual(middle))
+			{
+				middle = next;
+			}
+		}
+	}
+
+	public static ArrayIterator<T> RotateCopy<T>(
+		this ArrayIterator<T> first,
+		ArrayIterator<T> middle,
+		ArrayIterator<T> last,
+		ArrayIterator<T> result
+	)
+	{
+		result = Copy(middle, last, result);
+		return Copy(first, middle, result);
+	}
+
+	public static void RandomShuffle<T>(
+		this ArrayIterator<T> first,
+		ArrayIterator<T> last,
+		Func<int, int> gen
+	)
+	{
+		var n = Distance(first, last);
+		for (var i = n - 1; i > 0; --i)
+		{
+			first.GetAdvanced(i).Swap(first.GetAdvanced(gen(i + 1)));
+		}
+	}
+
+	public static bool IsPartitioned<T>(
+		this ArrayIterator<T> first,
+		ArrayIterator<T> last,
+		Func<T, bool> pred
+	)
+	{
+		while (first.NotEqual(last) && pred(first.GetCurrent()))
+		{
+			first = first.GetNext();
+		}
+		while (first.NotEqual(last))
+		{
+			if (pred(first.GetCurrent()))
+			{
+				return false;
+			}
+			first = first.GetNext();
+		}
+		return true;
+	}
+
+	public static ArrayIterator<T> Partition<T>(
+		this ArrayIterator<T> first,
+		ArrayIterator<T> last,
+		Func<T, bool> pred
+	)
+	{
+		while (first.NotEqual(last))
+		{
+			while (pred(first.GetCurrent()))
+			{
+				first = first.GetNext();
+				if (first.IsEqual(last))
+				{
+					return first;
+				}
+			}
+			do
+			{
+				last = last.GetPrev();
+				if (first.IsEqual(last))
+				{
+					return first;
+				}
+			} while (pred(last.GetCurrent()) == false);
+			first.Swap(last);
+			first = first.GetNext();
+		}
+		return first;
+	}
+
+	public static void PartitionCopy<T>(
+		this ArrayIterator<T> first,
+		ArrayIterator<T> last,
+		ArrayIterator<T> resultTrue,
+		ArrayIterator<T> resultFalse,
+		Func<T, bool> pred,
+		out ArrayIterator<T> outResultTrue,
+		out ArrayIterator<T> outResultFalse
+	)
+	{
+		while (first.NotEqual(last))
+		{
+			if (pred(first.GetCurrent()))
+			{
+				resultTrue.SetCurrent(first.GetCurrent());
+				resultTrue = resultTrue.GetNext();
+			}
+			else
+			{
+				resultFalse.SetCurrent(first.GetCurrent());
+				resultFalse = resultFalse.GetNext();
+			}
+			first = first.GetNext();
+		}
+		outResultTrue = resultTrue;
+		outResultFalse = resultFalse;
+	}
+
+	public static ArrayIterator<T> PartitionPoint<T>(
+		this ArrayIterator<T> first,
+		ArrayIterator<T> last,
+		Func<T, bool> pred
+	)
+	{
+		var n = first.Distance(last);
+		while (n > 0)
+		{
+			var it = first;
+			var step = n / 2;
+			it.GetAdvanced(step);
+			if (pred(it.GetCurrent()))
+			{
+				first = it.GetNext();
+				n -= step + 1;
+			}
+			else
+			{
+				n = step;
+			}
+		}
+		return first;
+	}
 }
 
 public struct ListIterator<T>
@@ -1176,5 +1401,230 @@ public static class ListIteratorExtensions
 			result = result.GetNext();
 		}
 		return result;
+	}
+
+	public static ListIterator<T> Unique<T>(
+		this ListIterator<T> first,
+		ListIterator<T> last,
+		Func<T, T, bool> pred
+	)
+	{
+		if (first.IsEqual(last))
+		{
+			return last;
+		}
+
+		var result = first;
+		while ((first = first.GetNext()).NotEqual(last))
+		{
+			if (pred(result.GetCurrent(), first.GetCurrent()) == false)
+			{
+				result = result.GetNext();
+				result.SetCurrent(first.GetCurrent());
+			}
+		}
+		result = result.GetNext();
+		return result;
+	}
+
+	public static ListIterator<T> UniqueCopy<T>(
+		this ListIterator<T> first,
+		ListIterator<T> last,
+		ListIterator<T> result,
+		Func<T, T, bool> pred
+	)
+	{
+		if (first.IsEqual(last))
+		{
+			return last;
+		}
+
+		result.SetCurrent(first.GetCurrent());
+		while ((first = first.GetNext()).NotEqual(last))
+		{
+			var val = first.GetCurrent();
+			if (pred(result.GetCurrent(), val) == false)
+			{
+				result = result.GetNext();
+				result.SetCurrent(val);
+			}
+		}
+		result = result.GetNext();
+		return result;
+	}
+
+	public static void Reverse<T>(this ListIterator<T> first, ListIterator<T> last)
+	{
+		while ((first.NotEqual(last)) && (first.NotEqual((last = last.GetPrev()))))
+		{
+			first.Swap(last);
+			first = first.GetNext();
+		}
+	}
+
+	public static ListIterator<T> ReverseCopy<T>(
+		this ListIterator<T> first,
+		ListIterator<T> last,
+		ListIterator<T> result
+	)
+	{
+		while (first.NotEqual(last))
+		{
+			last = last.GetPrev();
+			result.SetCurrent(last.GetCurrent());
+			result = result.GetNext();
+		}
+		return result;
+	}
+
+	public static void Rotate<T>(
+		this ListIterator<T> first,
+		ListIterator<T> middle,
+		ListIterator<T> last
+	)
+	{
+		var next = middle;
+		while (first.NotEqual(last))
+		{
+			first.Swap(next);
+			first = first.GetNext();
+			next = next.GetNext();
+			if (next.IsEqual(last))
+			{
+				next = middle;
+			}
+			else if (first.IsEqual(middle))
+			{
+				middle = next;
+			}
+		}
+	}
+
+	public static ListIterator<T> RotateCopy<T>(
+		this ListIterator<T> first,
+		ListIterator<T> middle,
+		ListIterator<T> last,
+		ListIterator<T> result
+	)
+	{
+		result = Copy(middle, last, result);
+		return Copy(first, middle, result);
+	}
+
+	public static void RandomShuffle<T>(
+		this ListIterator<T> first,
+		ListIterator<T> last,
+		Func<int, int> gen
+	)
+	{
+		var n = Distance(first, last);
+		for (var i = n - 1; i > 0; --i)
+		{
+			first.GetAdvanced(i).Swap(first.GetAdvanced(gen(i + 1)));
+		}
+	}
+
+	public static bool IsPartitioned<T>(
+		this ListIterator<T> first,
+		ListIterator<T> last,
+		Func<T, bool> pred
+	)
+	{
+		while (first.NotEqual(last) && pred(first.GetCurrent()))
+		{
+			first = first.GetNext();
+		}
+		while (first.NotEqual(last))
+		{
+			if (pred(first.GetCurrent()))
+			{
+				return false;
+			}
+			first = first.GetNext();
+		}
+		return true;
+	}
+
+	public static ListIterator<T> Partition<T>(
+		this ListIterator<T> first,
+		ListIterator<T> last,
+		Func<T, bool> pred
+	)
+	{
+		while (first.NotEqual(last))
+		{
+			while (pred(first.GetCurrent()))
+			{
+				first = first.GetNext();
+				if (first.IsEqual(last))
+				{
+					return first;
+				}
+			}
+			do
+			{
+				last = last.GetPrev();
+				if (first.IsEqual(last))
+				{
+					return first;
+				}
+			} while (pred(last.GetCurrent()) == false);
+			first.Swap(last);
+			first = first.GetNext();
+		}
+		return first;
+	}
+
+	public static void PartitionCopy<T>(
+		this ListIterator<T> first,
+		ListIterator<T> last,
+		ListIterator<T> resultTrue,
+		ListIterator<T> resultFalse,
+		Func<T, bool> pred,
+		out ListIterator<T> outResultTrue,
+		out ListIterator<T> outResultFalse
+	)
+	{
+		while (first.NotEqual(last))
+		{
+			if (pred(first.GetCurrent()))
+			{
+				resultTrue.SetCurrent(first.GetCurrent());
+				resultTrue = resultTrue.GetNext();
+			}
+			else
+			{
+				resultFalse.SetCurrent(first.GetCurrent());
+				resultFalse = resultFalse.GetNext();
+			}
+			first = first.GetNext();
+		}
+		outResultTrue = resultTrue;
+		outResultFalse = resultFalse;
+	}
+
+	public static ListIterator<T> PartitionPoint<T>(
+		this ListIterator<T> first,
+		ListIterator<T> last,
+		Func<T, bool> pred
+	)
+	{
+		var n = first.Distance(last);
+		while (n > 0)
+		{
+			var it = first;
+			var step = n / 2;
+			it.GetAdvanced(step);
+			if (pred(it.GetCurrent()))
+			{
+				first = it.GetNext();
+				n -= step + 1;
+			}
+			else
+			{
+				n = step;
+			}
+		}
+		return first;
 	}
 }
