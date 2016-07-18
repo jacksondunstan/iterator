@@ -816,6 +816,229 @@ public static class ArrayIteratorExtensions
 		}
 		return first;
 	}
+
+	public static void Sort<T>(
+		this ArrayIterator<T> first,
+		ArrayIterator<T> last,
+		Func<T, T, bool> comp
+	)
+	{
+		// Quicksort
+		if (first.IsEqual(last))
+		{
+			return;
+		}
+		var sep = first;
+		for (var i = first.GetNext(); i.NotEqual(last); i = i.GetNext())
+		{
+			if (comp(i.GetCurrent(), first.GetCurrent()))
+			{
+				sep = sep.GetNext();
+				sep.Swap(i);
+			}
+		}
+		first.Swap(sep);
+		first.Sort(sep, comp);
+		sep.GetNext().Sort(last, comp);
+	}
+
+	public static void StableSort<T>(
+		this ArrayIterator<T> first,
+		ArrayIterator<T> last,
+		Func<T, T, bool> comp
+	)
+	{
+		// TODO find a faster algorithm that doesn't create any garbage than insertion sort
+		var arr = first.Array;
+		for (var i = first.Index + 1; i < last.Index; i++)
+		{
+			var x = arr[i];
+			var left = first.Index;
+			var right = i - 1;
+			while (left <= right)
+			{
+				var middle = (left + right) / 2;
+				if (comp(x, arr[middle]))
+				{
+					right = middle - 1;
+				}
+				else
+				{
+					left = middle + 1;
+				}
+			}
+			for (var j = i - 1; j >= left; j--)
+			{
+				arr[j + 1] = arr[j];
+			}
+			arr[left] = x;
+		}
+	}
+
+	public static void PartialSort<T>(
+		this ArrayIterator<T> first,
+		ArrayIterator<T> middle,
+		ArrayIterator<T> last,
+		Func<T, T, bool> comp
+	)
+	{
+		// TODO find a faster algorithm that doesn't create any garbage
+		first.Sort(last, comp);
+	}
+
+	public static bool IsSorted<T>(
+		this ArrayIterator<T> first,
+		ArrayIterator<T> last,
+		Func<T, T, bool> comp
+	)
+	{
+		if (first.IsEqual(last))
+		{
+			return true;
+		}
+		var next = first;
+		while ((next = next.GetNext()).NotEqual(last))
+		{
+			if (comp(next.GetCurrent(), first.GetCurrent()))
+			{
+				return false;
+			}
+			first = first.GetNext();
+		}
+		return true;
+	}
+
+	public static ArrayIterator<T> IsSortedUntil<T>(
+		this ArrayIterator<T> first,
+		ArrayIterator<T> last,
+		Func<T, T, bool> comp
+	)
+	{
+		if (first.IsEqual(last))
+		{
+			return first;
+		}
+		var next = first;
+		while ((next = next.GetNext()).NotEqual(last))
+		{
+			if (comp(next.GetCurrent(), first.GetCurrent()))
+			{
+				return next;
+			}
+			first = first.GetNext();
+		}
+		return last;
+	}
+
+	public static void NthElement<T>(
+		this ArrayIterator<T> first,
+		ArrayIterator<T> nth,
+		ArrayIterator<T> last,
+		Func<T, T, bool> comp
+	)
+	{
+		// TODO find a faster algorithm that doesn't create any garbage
+		first.Sort(last, comp);
+	}
+
+	public static ArrayIterator<T> LowerBound<T>(
+		this ArrayIterator<T> first,
+		ArrayIterator<T> last,
+		T val,
+		Func<T, T, bool> comp
+	)
+	{
+		var count = first.Distance(last);
+		while (count > 0)
+		{
+			var it = first;
+			var step = count / 2;
+			it = it.GetAdvanced(step);
+			if (comp(it.GetCurrent(), val))
+			{
+				it = it.GetNext();
+				first = it;
+				count -= step + 1;
+			}
+			else
+			{
+				count = step;
+			}
+		}
+		return first;
+	}
+
+	public static ArrayIterator<T> UpperBound<T>(
+		this ArrayIterator<T> first,
+		ArrayIterator<T> last,
+		T val,
+		Func<T, T, bool> comp
+	)
+	{
+		var count = Distance(first,last);
+		while (count > 0)
+		{
+			var it = first;
+			var step = count / 2;
+			it = it.GetAdvanced(step);
+			if (comp(val, it.GetCurrent()) == false)
+			{
+				it = it.GetNext();
+				first = it;
+				count -= step + 1;
+			}
+			else
+			{
+				count = step;
+			}
+		}
+		return first;
+	}
+
+	public static void EqualRange<T>(
+		this ArrayIterator<T> first,
+		ArrayIterator<T> last,
+		T val,
+		Func<T, T, bool> comp,
+		out ArrayIterator<T> lower,
+		out ArrayIterator<T> upper
+	)
+	{
+		lower = first.LowerBound(last, val, comp);
+		upper = lower.UpperBound(last, val, comp);
+	}
+
+	public static bool BinarySearch<T>(
+		this ArrayIterator<T> first,
+		ArrayIterator<T> last,
+		T val,
+		Func<T, T, bool> comp
+	)
+	{
+		first = first.LowerBound(last, val, comp);
+		return first.NotEqual(last) && comp(val, first.GetCurrent()) == false;
+	}
+
+	public static ArrayIterator<T> MinElement<T>(
+		this ArrayIterator<T> first,
+		ArrayIterator<T> last,
+		Func<T, T, bool> comp
+	)
+	{
+		if (first.Equals(last))
+		{
+			return last;
+		}
+		var smallest = first;
+		while ((first = first.GetNext()).NotEqual(last))
+		{
+			if (comp(first.GetCurrent(), smallest.GetCurrent()))
+			{
+				smallest = first;
+			}
+		}
+		return smallest;
+	}
 }
 
 public struct ListIterator<T>
@@ -1626,5 +1849,207 @@ public static class ListIteratorExtensions
 			}
 		}
 		return first;
+	}
+
+	public static void Sort<T>(
+		this ListIterator<T> first,
+		ListIterator<T> last,
+		Func<T, T, bool> comp
+	)
+	{
+		// Quicksort
+		if (first.IsEqual(last))
+		{
+			return;
+		}
+		var sep = first;
+		for (var i = first.GetNext(); i.NotEqual(last); i = i.GetNext())
+		{
+			if (comp(i.GetCurrent(), first.GetCurrent()))
+			{
+				sep = sep.GetNext();
+				sep.Swap(i);
+			}
+		}
+		first.Swap(sep);
+		first.Sort(sep, comp);
+		sep.GetNext().Sort(last, comp);
+	}
+
+	public static void StableSort<T>(
+		this ListIterator<T> first,
+		ListIterator<T> last,
+		Func<T, T, bool> comp
+	)
+	{
+		// TODO find a faster algorithm that doesn't create any garbage than insertion sort
+		var arr = first.List;
+		for (var i = first.Index + 1; i < last.Index; i++)
+		{
+			var x = arr[i];
+			var left = first.Index;
+			var right = i - 1;
+			while (left <= right)
+			{
+				var middle = (left + right) / 2;
+				if (comp(x, arr[middle]))
+				{
+					right = middle - 1;
+				}
+				else
+				{
+					left = middle + 1;
+				}
+			}
+			for (var j = i - 1; j >= left; j--)
+			{
+				arr[j + 1] = arr[j];
+			}
+			arr[left] = x;
+		}
+	}
+
+	public static void PartialSort<T>(
+		this ListIterator<T> first,
+		ListIterator<T> middle,
+		ListIterator<T> last,
+		Func<T, T, bool> comp
+	)
+	{
+		// TODO find a faster algorithm that doesn't create any garbage
+		first.Sort(last, comp);
+	}
+
+	public static bool IsSorted<T>(
+		this ListIterator<T> first,
+		ListIterator<T> last,
+		Func<T, T, bool> comp
+	)
+	{
+		if (first.IsEqual(last))
+		{
+			return true;
+		}
+		var next = first;
+		while ((next = next.GetNext()).NotEqual(last))
+		{
+			if (comp(next.GetCurrent(), first.GetCurrent()))
+			{
+				return false;
+			}
+			first = first.GetNext();
+		}
+		return true;
+	}
+
+	public static ListIterator<T> IsSortedUntil<T>(
+		this ListIterator<T> first,
+		ListIterator<T> last,
+		Func<T, T, bool> comp
+	)
+	{
+		if (first.IsEqual(last))
+		{
+			return first;
+		}
+		var next = first;
+		while ((next = next.GetNext()).NotEqual(last))
+		{
+			if (comp(next.GetCurrent(), first.GetCurrent()))
+			{
+				return next;
+			}
+			first = first.GetNext();
+		}
+		return last;
+	}
+
+	public static void NthElement<T>(
+		this ListIterator<T> first,
+		ListIterator<T> nth,
+		ListIterator<T> last,
+		Func<T, T, bool> comp
+	)
+	{
+		// TODO find a faster algorithm that doesn't create any garbage
+		first.Sort(last, comp);
+	}
+
+	public static ListIterator<T> LowerBound<T>(
+		this ListIterator<T> first,
+		ListIterator<T> last,
+		T val,
+		Func<T, T, bool> comp
+	)
+	{
+		var count = first.Distance(last);
+		while (count > 0)
+		{
+			var it = first;
+			var step = count / 2;
+			it = it.GetAdvanced(step);
+			if (comp(it.GetCurrent(), val))
+			{
+				it = it.GetNext();
+				first = it;
+				count -= step + 1;
+			}
+			else
+			{
+				count = step;
+			}
+		}
+		return first;
+	}
+
+	public static ListIterator<T> UpperBound<T>(
+		this ListIterator<T> first,
+		ListIterator<T> last,
+		T val,
+		Func<T, T, bool> comp
+	)
+	{
+		var count = Distance(first,last);
+		while (count > 0)
+		{
+			var it = first;
+			var step = count / 2;
+			it = it.GetAdvanced(step);
+			if (comp(val, it.GetCurrent()) == false)
+			{
+				it = it.GetNext();
+				first = it;
+				count -= step + 1;
+			}
+			else
+			{
+				count = step;
+			}
+		}
+		return first;
+	}
+
+	public static void EqualRange<T>(
+		this ListIterator<T> first,
+		ListIterator<T> last,
+		T val,
+		Func<T, T, bool> comp,
+		out ListIterator<T> lower,
+		out ListIterator<T> upper
+	)
+	{
+		lower = first.LowerBound(last, val, comp);
+		upper = lower.UpperBound(last, val, comp);
+	}
+
+	public static bool BinarySearch<T>(
+		this ListIterator<T> first,
+		ListIterator<T> last,
+		T val,
+		Func<T, T, bool> comp
+	)
+	{
+		first = first.LowerBound(last, val, comp);
+		return first.NotEqual(last) && comp(val, first.GetCurrent()) == false;
 	}
 }
