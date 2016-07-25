@@ -375,6 +375,8 @@ public static class ArrayIteratorExtensions
 		return true;
 	}
 
+
+
 	public static ArrayIterator<T> Search<T>(
 		this ArrayIterator<T> first1,
 		ArrayIterator<T> last1,
@@ -1019,25 +1021,391 @@ public static class ArrayIteratorExtensions
 		return first.NotEqual(last) && comp(val, first.GetCurrent()) == false;
 	}
 
-	public static ArrayIterator<T> MinElement<T>(
+	public static ArrayIterator<T> Merge<T>(
+		this ArrayIterator<T> first1,
+		ArrayIterator<T> last1,
+		ArrayIterator<T> first2,
+		ArrayIterator<T> last2,
+		ArrayIterator<T> result,
+		Func<T, T, bool> comp
+	)
+	{
+		while (true)
+		{
+			if (first1.IsEqual(last1))
+			{
+				return first2.Copy(last2, result);
+			}
+			if (first2.IsEqual(last2))
+			{
+				return first1.Copy(last1, result);
+			}
+			if (comp(first2.GetCurrent(), first1.GetCurrent()))
+			{
+				result.SetCurrent(first2.GetCurrent());
+				first2 = first2.GetNext();
+			}
+			else
+			{
+				result.SetCurrent(first1.GetCurrent());
+				first1 = first1.GetNext();
+			}
+			result = result.GetNext();
+		}
+	}
+
+	public static void InplaceMerge<T>(
+		this ArrayIterator<T> first,
+		ArrayIterator<T> middle,
+		ArrayIterator<T> last,
+		Func<T, T, bool> comp
+	)
+	{
+		if (first.Index >= middle.Index || middle.Index >= last.Index)
+		{
+			return;
+		}
+		if (last.Index - first.Index == 2)
+		{
+			if (comp(middle.GetCurrent(), first.GetCurrent()))
+			{
+				Swap(first, middle);
+			}
+			return;
+		}
+		ArrayIterator<T> firstCut;
+		ArrayIterator<T> secondCut;
+		if (middle.Index - first.Index > last.Index - middle.Index)
+		{
+			firstCut = first.GetAdvanced(first.Distance(middle) / 2);
+			secondCut = middle.LowerBound(last, firstCut.GetCurrent(), comp);
+		}
+		else
+		{
+			secondCut = middle.GetAdvanced(middle.Distance(last) / 2);
+			firstCut = first.UpperBound(middle, secondCut.GetCurrent(), comp);
+		}
+		Rotate(firstCut, middle, secondCut);
+		middle = firstCut.GetAdvanced(middle.Distance(secondCut));
+		InplaceMerge(first, firstCut, middle, comp);
+		InplaceMerge(middle, secondCut, last, comp);
+	}
+
+	public static bool Includes<T>(
+		this ArrayIterator<T> first1,
+		ArrayIterator<T> last1,
+		ArrayIterator<T> first2,
+		ArrayIterator<T> last2,
+		Func<T, T, bool> comp
+	)
+	{
+		while (first2.NotEqual(last2))
+		{
+			if ((first1.IsEqual(last1)) || comp(first2.GetCurrent(), first1.GetCurrent()))
+			{
+				return false;
+			}
+			if (comp(first1.GetCurrent(), first2.GetCurrent()) == false)
+			{
+				first2 = first2.GetNext();
+			}
+			first1 = first1.GetNext();
+		}
+		return true;
+	}
+
+	public static ArrayIterator<T> SetUnion<T>(
+		this ArrayIterator<T> first1,
+		ArrayIterator<T> last1,
+		ArrayIterator<T> first2,
+		ArrayIterator<T> last2,
+		ArrayIterator<T> result,
+		Func<T, T, bool> comp
+	)
+	{
+		while (true)
+		{
+			if (first1.IsEqual(last1))
+			{
+				return first2.Copy(last2, result);
+			}
+			if (first2.IsEqual(last2))
+			{
+				return first1.Copy(last1, result);
+			}
+			if (comp(first1.GetCurrent(), first2.GetCurrent()))
+			{
+				result.SetCurrent(first1.GetCurrent());
+				first1 = first1.GetNext();
+			}
+			else if (comp(first2.GetCurrent(), first1.GetCurrent()))
+			{
+				result.SetCurrent(first2.GetCurrent());
+				first2 = first2.GetNext();
+			}
+			else
+			{
+				result.SetCurrent(first1.GetCurrent());
+				first1 = first1.GetNext();
+				first2 = first2.GetNext();
+			}
+			result = result.GetNext();
+		}
+	}
+
+	public static ArrayIterator<T> SetIntersection<T>(
+		this ArrayIterator<T> first1,
+		ArrayIterator<T> last1,
+		ArrayIterator<T> first2,
+		ArrayIterator<T> last2,
+		ArrayIterator<T> result,
+		Func<T, T, bool> comp
+	)
+	{
+		while (first1.NotEqual(last1) && first2.NotEqual(last2))
+		{
+			if (comp(first1.GetCurrent(), first2.GetCurrent()))
+			{
+				first1 = first1.GetNext();
+			}
+			else if (comp(first2.GetCurrent(), first1.GetCurrent()))
+			{
+				first2 = first2.GetNext();
+			}
+			else
+			{
+				result.SetCurrent(first1.GetCurrent());
+				result = result.GetNext();
+				first1 = first1.GetNext();
+				first2 = first2.GetNext();
+			}
+		}
+		return result;
+	}
+
+	public static ArrayIterator<T> SetDifference<T>(
+		this ArrayIterator<T> first1,
+		ArrayIterator<T> last1,
+		ArrayIterator<T> first2,
+		ArrayIterator<T> last2,
+		ArrayIterator<T> result,
+		Func<T, T, bool> comp
+	)
+	{
+		while (first1.NotEqual(last1) && first2.NotEqual(last2))
+		{
+			if (comp(first1.GetCurrent(), first2.GetCurrent()))
+			{
+				result.SetCurrent(first1.GetCurrent());
+				result = result.GetNext();
+				first1 = first1.GetNext();
+			}
+			else if (comp(first2.GetCurrent(), first1.GetCurrent()))
+			{
+				first2 = first2.GetNext();
+			}
+			else
+			{
+				first1 = first1.GetNext();
+				first2 = first2.GetNext();
+			}
+		}
+		return first1.Copy(last1, result);
+	}
+
+	public static ArrayIterator<T> SetSymmetricDifference<T>(
+		this ArrayIterator<T> first1,
+		ArrayIterator<T> last1,
+		ArrayIterator<T> first2,
+		ArrayIterator<T> last2,
+		ArrayIterator<T> result,
+		Func<T, T, bool> comp
+	)
+	{
+		while (true)
+		{
+			if (first1.IsEqual(last1))
+			{
+				return first2.Copy(last2, result);
+			}
+			if (first2.IsEqual(last2))
+			{
+				return first1.Copy(last1, result);
+			}
+			if (comp(first1.GetCurrent(), first2.GetCurrent()))
+			{
+				result.SetCurrent(first1.GetCurrent());
+				result = result.GetNext();
+				first1 = first1.GetNext();
+			}
+			else if (comp(first2.GetCurrent(), first1.GetCurrent()))
+			{
+				result.SetCurrent(first2.GetCurrent());
+				result = result.GetNext();
+				first2 = first2.GetNext();
+			}
+			else
+			{
+				first1 = first1.GetNext();
+				first2 = first2.GetNext();
+			}
+		}
+	}
+
+	public static void PushHeap<T>(
 		this ArrayIterator<T> first,
 		ArrayIterator<T> last,
 		Func<T, T, bool> comp
 	)
 	{
-		if (first.Equals(last))
+		if (first.Distance(last) < 2)
 		{
-			return last;
+			return;
 		}
-		var smallest = first;
-		while ((first = first.GetNext()).NotEqual(last))
+		last = last.GetPrev();
+		var temp = last.GetCurrent();
+		var parent = first.GetAdvanced((first.Distance(last) - 1) / 2);
+		while (first.Distance(last) > 0 && comp(parent.GetCurrent(), temp))
 		{
-			if (comp(first.GetCurrent(), smallest.GetCurrent()))
+			last.SetCurrent(parent.GetCurrent());
+			last = parent;
+			parent = first.GetAdvanced((first.Distance(last) - 1) / 2);
+		}
+		last.SetCurrent(temp);
+	}
+
+	public static void PopHeap<T>(
+		this ArrayIterator<T> first,
+		ArrayIterator<T> last,
+		Func<T, T, bool> comp
+	)
+	{
+		if (first.Distance(last) < 2)
+		{
+			return;
+		}
+		last = last.GetPrev();
+		Swap(first, last);
+		AdjustHeap(first.Array, first.Index, first.Index, last.Index, comp);
+	}
+
+	public static void MakeHeap<T>(
+		this ArrayIterator<T> first,
+		ArrayIterator<T> last,
+		Func<T, T, bool> comp
+	)
+	{
+		var dist = first.Distance(last);
+		if (dist < 2)
+		{
+			return;
+		}
+		var parent = (dist - 2) / 2;
+		do
+		{
+			AdjustHeap(first.Array, first.Index, first.Index + parent, last.Index, comp);
+		}
+		while (parent-- != 0);
+	}
+
+	public static void SortHeap<T>(
+		this ArrayIterator<T> first,
+		ArrayIterator<T> last,
+		Func<T, T, bool> comp
+	)
+	{
+		while (first.Distance(last) > 1)
+		{
+			last = last.GetPrev();
+			Swap(first, last);
+			AdjustHeap(first.Array, first.Index, first.Index, last.Index, comp);
+		}
+	}
+
+	private static void AdjustHeap<T>(
+		this T[] array,
+		int first,
+		int position,
+		int last,
+		Func<T, T, bool> comp
+	)
+	{
+		var tmp = array[position];
+		int len = last - first;
+		int holeIndex = position - first;
+		int secondChild = 2 * holeIndex + 2;
+		while (secondChild < len)
+		{
+			if (
+				comp(
+					array[first + secondChild],
+					array[first + (secondChild - 1)]
+				)
+			)
 			{
-				smallest = first;
+				--secondChild;
 			}
+			array[first + holeIndex] = array[first + secondChild];
+			holeIndex = secondChild++;
+			secondChild *= 2;
 		}
-		return smallest;
+		if (secondChild-- == len)
+		{
+			array[first + holeIndex] = array[first + secondChild];
+			holeIndex = secondChild;
+		}
+		var parent = (holeIndex - 1) / 2;
+		var topIndex = position - first;
+		while (holeIndex != topIndex && comp(array[first + parent], tmp))
+		{
+			array[first + holeIndex] = array[first + parent];
+			holeIndex = parent;
+			parent = (holeIndex - 1) / 2;
+		}
+		array[first + holeIndex] = tmp;
+	}
+
+	public static bool IsHeap<T>(
+		this ArrayIterator<T> first,
+		ArrayIterator<T> last,
+		Func<T, T, bool> comp
+	)
+	{
+		return first.IsHeapUntil(last, comp).IsEqual(last);
+	}
+
+	public static ArrayIterator<T> IsHeapUntil<T>(
+		this ArrayIterator<T> first,
+		ArrayIterator<T> last,
+		Func<T, T, bool> comp
+	)
+	{
+		var len = first.Distance(last);
+		var p = 0;
+		var c = 1;
+		var pp = first;
+		while (c < len)
+		{
+			var cp = first.GetAdvanced(c);
+			if (comp(pp.GetCurrent(), cp.GetCurrent()))
+			{
+				return cp;
+			}
+			c++;
+			cp = cp.GetNext();
+			if (c == len)
+			{
+				return last;
+			}
+			if (comp(pp.GetCurrent(), cp.GetCurrent()))
+			{
+				return cp;
+			}
+			p++;
+			pp = pp.GetNext();
+			c = 2 * p + 1;
+		}
+		return last;
 	}
 }
 
@@ -2051,5 +2419,392 @@ public static class ListIteratorExtensions
 	{
 		first = first.LowerBound(last, val, comp);
 		return first.NotEqual(last) && comp(val, first.GetCurrent()) == false;
+	}
+
+	public static ListIterator<T> Merge<T>(
+		this ListIterator<T> first1,
+		ListIterator<T> last1,
+		ListIterator<T> first2,
+		ListIterator<T> last2,
+		ListIterator<T> result,
+		Func<T, T, bool> comp
+	)
+	{
+		while (true)
+		{
+			if (first1.IsEqual(last1))
+			{
+				return first2.Copy(last2, result);
+			}
+			if (first2.IsEqual(last2))
+			{
+				return first1.Copy(last1, result);
+			}
+			if (comp(first2.GetCurrent(), first1.GetCurrent()))
+			{
+				result.SetCurrent(first2.GetCurrent());
+				first2 = first2.GetNext();
+			}
+			else
+			{
+				result.SetCurrent(first1.GetCurrent());
+				first1 = first1.GetNext();
+			}
+			result = result.GetNext();
+		}
+	}
+
+	public static void InplaceMerge<T>(
+		this ListIterator<T> first,
+		ListIterator<T> middle,
+		ListIterator<T> last,
+		Func<T, T, bool> comp
+	)
+	{
+		if (first.Index >= middle.Index || middle.Index >= last.Index)
+		{
+			return;
+		}
+		if (last.Index - first.Index == 2)
+		{
+			if (comp(middle.GetCurrent(), first.GetCurrent()))
+			{
+				Swap(first, middle);
+			}
+			return;
+		}
+		ListIterator<T> firstCut;
+		ListIterator<T> secondCut;
+		if (middle.Index - first.Index > last.Index - middle.Index)
+		{
+			firstCut = first.GetAdvanced(first.Distance(middle) / 2);
+			secondCut = middle.LowerBound(last, firstCut.GetCurrent(), comp);
+		}
+		else
+		{
+			secondCut = middle.GetAdvanced(middle.Distance(last) / 2);
+			firstCut = first.UpperBound(middle, secondCut.GetCurrent(), comp);
+		}
+		Rotate(firstCut, middle, secondCut);
+		middle = firstCut.GetAdvanced(middle.Distance(secondCut));
+		InplaceMerge(first, firstCut, middle, comp);
+		InplaceMerge(middle, secondCut, last, comp);
+	}
+
+	public static bool Includes<T>(
+		this ListIterator<T> first1,
+		ListIterator<T> last1,
+		ListIterator<T> first2,
+		ListIterator<T> last2,
+		Func<T, T, bool> comp
+	)
+	{
+		while (first2.NotEqual(last2))
+		{
+			if ((first1.IsEqual(last1)) || comp(first2.GetCurrent(), first1.GetCurrent()))
+			{
+				return false;
+			}
+			if (comp(first1.GetCurrent(), first2.GetCurrent()) == false)
+			{
+				first2 = first2.GetNext();
+			}
+			first1 = first1.GetNext();
+		}
+		return true;
+	}
+
+	public static ListIterator<T> SetUnion<T>(
+		this ListIterator<T> first1,
+		ListIterator<T> last1,
+		ListIterator<T> first2,
+		ListIterator<T> last2,
+		ListIterator<T> result,
+		Func<T, T, bool> comp
+	)
+	{
+		while (true)
+		{
+			if (first1.IsEqual(last1))
+			{
+				return first2.Copy(last2, result);
+			}
+			if (first2.IsEqual(last2))
+			{
+				return first1.Copy(last1, result);
+			}
+			if (comp(first1.GetCurrent(), first2.GetCurrent()))
+			{
+				result.SetCurrent(first1.GetCurrent());
+				first1 = first1.GetNext();
+			}
+			else if (comp(first2.GetCurrent(), first1.GetCurrent()))
+			{
+				result.SetCurrent(first2.GetCurrent());
+				first2 = first2.GetNext();
+			}
+			else
+			{
+				result.SetCurrent(first1.GetCurrent());
+				first1 = first1.GetNext();
+				first2 = first2.GetNext();
+			}
+			result = result.GetNext();
+		}
+	}
+
+	public static ListIterator<T> SetIntersection<T>(
+		this ListIterator<T> first1,
+		ListIterator<T> last1,
+		ListIterator<T> first2,
+		ListIterator<T> last2,
+		ListIterator<T> result,
+		Func<T, T, bool> comp
+	)
+	{
+		while (first1.NotEqual(last1) && first2.NotEqual(last2))
+		{
+			if (comp(first1.GetCurrent(), first2.GetCurrent()))
+			{
+				first1 = first1.GetNext();
+			}
+			else if (comp(first2.GetCurrent(), first1.GetCurrent()))
+			{
+				first2 = first2.GetNext();
+			}
+			else
+			{
+				result.SetCurrent(first1.GetCurrent());
+				result = result.GetNext();
+				first1 = first1.GetNext();
+				first2 = first2.GetNext();
+			}
+		}
+		return result;
+	}
+
+	public static ListIterator<T> SetDifference<T>(
+		this ListIterator<T> first1,
+		ListIterator<T> last1,
+		ListIterator<T> first2,
+		ListIterator<T> last2,
+		ListIterator<T> result,
+		Func<T, T, bool> comp
+	)
+	{
+		while (first1.NotEqual(last1) && first2.NotEqual(last2))
+		{
+			if (comp(first1.GetCurrent(), first2.GetCurrent()))
+			{
+				result.SetCurrent(first1.GetCurrent());
+				result = result.GetNext();
+				first1 = first1.GetNext();
+			}
+			else if (comp(first2.GetCurrent(), first1.GetCurrent()))
+			{
+				first2 = first2.GetNext();
+			}
+			else
+			{
+				first1 = first1.GetNext();
+				first2 = first2.GetNext();
+			}
+		}
+		return first1.Copy(last1, result);
+	}
+
+	public static ListIterator<T> SetSymmetricDifference<T>(
+		this ListIterator<T> first1,
+		ListIterator<T> last1,
+		ListIterator<T> first2,
+		ListIterator<T> last2,
+		ListIterator<T> result,
+		Func<T, T, bool> comp
+	)
+	{
+		while (true)
+		{
+			if (first1.IsEqual(last1))
+			{
+				return first2.Copy(last2, result);
+			}
+			if (first2.IsEqual(last2))
+			{
+				return first1.Copy(last1, result);
+			}
+			if (comp(first1.GetCurrent(), first2.GetCurrent()))
+			{
+				result.SetCurrent(first1.GetCurrent());
+				result = result.GetNext();
+				first1 = first1.GetNext();
+			}
+			else if (comp(first2.GetCurrent(), first1.GetCurrent()))
+			{
+				result.SetCurrent(first2.GetCurrent());
+				result = result.GetNext();
+				first2 = first2.GetNext();
+			}
+			else
+			{
+				first1 = first1.GetNext();
+				first2 = first2.GetNext();
+			}
+		}
+	}
+
+	public static void PushHeap<T>(
+		this ListIterator<T> first,
+		ListIterator<T> last,
+		Func<T, T, bool> comp
+	)
+	{
+		if (first.Distance(last) < 2)
+		{
+			return;
+		}
+		last = last.GetPrev();
+		var temp = last.GetCurrent();
+		var parent = first.GetAdvanced((first.Distance(last) - 1) / 2);
+		while (first.Distance(last) > 0 && comp(parent.GetCurrent(), temp))
+		{
+			last.SetCurrent(parent.GetCurrent());
+			last = parent;
+			parent = first.GetAdvanced((first.Distance(last) - 1) / 2);
+		}
+		last.SetCurrent(temp);
+	}
+
+	public static void PopHeap<T>(
+		this ListIterator<T> first,
+		ListIterator<T> last,
+		Func<T, T, bool> comp
+	)
+	{
+		if (first.Distance(last) < 2)
+		{
+			return;
+		}
+		last = last.GetPrev();
+		Swap(first, last);
+		AdjustHeap(first.List, first.Index, first.Index, last.Index, comp);
+	}
+
+	public static void MakeHeap<T>(
+		this ListIterator<T> first,
+		ListIterator<T> last,
+		Func<T, T, bool> comp
+	)
+	{
+		var dist = first.Distance(last);
+		if (dist < 2)
+		{
+			return;
+		}
+		var parent = (dist - 2) / 2;
+		do
+		{
+			AdjustHeap(first.List, first.Index, first.Index + parent, last.Index, comp);
+		}
+		while (parent-- != 0);
+	}
+
+	public static void SortHeap<T>(
+		this ListIterator<T> first,
+		ListIterator<T> last,
+		Func<T, T, bool> comp
+	)
+	{
+		while (first.Distance(last) > 1)
+		{
+			last = last.GetPrev();
+			Swap(first, last);
+			AdjustHeap(first.List, first.Index, first.Index, last.Index, comp);
+		}
+	}
+
+	private static void AdjustHeap<T>(
+		this IList<T> list,
+		int first,
+		int position,
+		int last,
+		Func<T, T, bool> comp
+	)
+	{
+		var tmp = list[position];
+		int len = last - first;
+		int holeIndex = position - first;
+		int secondChild = 2 * holeIndex + 2;
+		while (secondChild < len)
+		{
+			if (
+				comp(
+					list[first + secondChild],
+					list[first + (secondChild - 1)]
+				)
+			)
+			{
+				--secondChild;
+			}
+			list[first + holeIndex] = list[first + secondChild];
+			holeIndex = secondChild++;
+			secondChild *= 2;
+		}
+		if (secondChild-- == len)
+		{
+			list[first + holeIndex] = list[first + secondChild];
+			holeIndex = secondChild;
+		}
+		var parent = (holeIndex - 1) / 2;
+		var topIndex = position - first;
+		while (holeIndex != topIndex && comp(list[first + parent], tmp))
+		{
+			list[first + holeIndex] = list[first + parent];
+			holeIndex = parent;
+			parent = (holeIndex - 1) / 2;
+		}
+		list[first + holeIndex] = tmp;
+	}
+
+	public static bool IsHeap<T>(
+		this ListIterator<T> first,
+		ListIterator<T> last,
+		Func<T, T, bool> comp
+	)
+	{
+		return first.IsHeapUntil(last, comp).IsEqual(last);
+	}
+
+	public static ListIterator<T> IsHeapUntil<T>(
+		this ListIterator<T> first,
+		ListIterator<T> last,
+		Func<T, T, bool> comp
+	)
+	{
+		var len = first.Distance(last);
+		var p = 0;
+		var c = 1;
+		var pp = first;
+		while (c < len)
+		{
+			var cp = first.GetAdvanced(c);
+			if (comp(pp.GetCurrent(), cp.GetCurrent()))
+			{
+				return cp;
+			}
+			c++;
+			cp = cp.GetNext();
+			if (c == len)
+			{
+				return last;
+			}
+			if (comp(pp.GetCurrent(), cp.GetCurrent()))
+			{
+				return cp;
+			}
+			p++;
+			pp = pp.GetNext();
+			c = 2 * p + 1;
+		}
+		return last;
 	}
 }
