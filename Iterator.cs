@@ -1322,6 +1322,164 @@ public static class ArrayIteratorExtensions
 		}
 	}
 
+	public static ArrayIterator<T> MinElement<T>(
+		this ArrayIterator<T> first,
+		ArrayIterator<T> last,
+		Func<T, T, bool> comp
+	)
+	{
+		if (first.IsEqual(last))
+		{
+			return last;
+		}
+		var smallest = first;
+		while ((first = first.GetNext()).NotEqual(last))
+		{
+			if (comp(first.GetCurrent(), smallest.GetCurrent()))
+			{
+				smallest = first;
+			}
+		}
+		return smallest;
+	}
+
+	public static ArrayIterator<T> MaxElement<T>(
+		this ArrayIterator<T> first,
+		ArrayIterator<T> last,
+		Func<T, T, bool> comp
+	)
+	{
+		if (first.IsEqual(last))
+		{
+			return last;
+		}
+		var largest = first;
+		while ((first = first.GetNext()).NotEqual(last))
+		{
+			if (comp(largest.GetCurrent(), first.GetCurrent()))
+			{
+				largest = first;
+			}
+		}
+		return largest;
+	}
+
+	public static void MinMaxElement<T>(
+		this ArrayIterator<T> first,
+		ArrayIterator<T> last,
+		Func<T, T, bool> comp,
+		out ArrayIterator<T> min,
+		out ArrayIterator<T> max
+	)
+	{
+		if (first.IsEqual(last))
+		{
+			min = last;
+			max = last;
+		}
+		min = first;
+		max = first;
+		while ((first = first.GetNext()).NotEqual(last))
+		{
+			if (comp(first.GetCurrent(), min.GetCurrent()))
+			{
+				min = first;
+			}
+			if (comp(max.GetCurrent(), first.GetCurrent()))
+			{
+				max = first;
+			}
+		}
+	}
+
+	public static bool LexicographicalCompare<T>(
+		this ArrayIterator<T> first1,
+		ArrayIterator<T> last1,
+		ArrayIterator<T> first2,
+		ArrayIterator<T> last2,
+		Func<T, T, bool> comp
+	)
+	{
+		while (first1.NotEqual(last1))
+		{
+			if (first2.IsEqual(last2) || comp(first2.GetCurrent(), first1.GetCurrent()))
+			{
+				return false;
+			}
+			else if (comp(first1.GetCurrent(), first2.GetCurrent()))
+			{
+				return true;
+			}
+			first1 = first1.GetNext();
+			first2 = first2.GetNext();
+		}
+		return first2.NotEqual(last2);
+	}
+
+	public static bool NextPermutation<T>(
+		this ArrayIterator<T> first,
+		ArrayIterator<T> last,
+		Func<T, T, bool> comp
+	)
+	{
+		var i = last;
+		if (first.IsEqual(last) || first.IsEqual((i = i.GetPrev())))
+		{
+			return false;
+		}
+		while (true)
+		{
+			var ip1 = i;
+			if (comp((i = i.GetPrev()).GetCurrent(), ip1.GetCurrent()))
+			{
+				var j = last;
+				while (comp(i.GetCurrent(), (j = j.GetPrev()).GetCurrent()) == false)
+				{
+				}
+				Swap(i, j);
+				Reverse(ip1, last);
+				return true;
+			}
+			if (i.IsEqual(first))
+			{
+				Reverse(first, last);
+				return false;
+			}
+		}
+	}
+
+	public static bool PrevPermutation<T>(
+		this ArrayIterator<T> first,
+		ArrayIterator<T> last,
+		Func<T, T, bool> comp
+	)
+	{
+		var i = last;
+		if (first.IsEqual(last) || first.IsEqual(i = i.GetPrev()))
+		{
+			return false;
+		}
+		while (true)
+		{
+			var ip1 = i;
+			if (comp(ip1.GetCurrent(), (i = i.GetPrev()).GetCurrent()))
+			{
+				var j = last;
+				while (comp((j = j.GetPrev()).GetCurrent(), i.GetCurrent()) == false)
+				{
+				}
+				Swap(i, j);
+				Reverse(ip1, last);
+				return true;
+			}
+			if (i.IsEqual(first))
+			{
+				Reverse(first, last);
+				return false;
+			}
+		}
+	}
+
 	private static void AdjustHeap<T>(
 		this T[] array,
 		int first,
@@ -2806,5 +2964,163 @@ public static class ListIteratorExtensions
 			c = 2 * p + 1;
 		}
 		return last;
+	}
+
+	public static ListIterator<T> MinElement<T>(
+		this ListIterator<T> first,
+		ListIterator<T> last,
+		Func<T, T, bool> comp
+	)
+	{
+		if (first.IsEqual(last))
+		{
+			return last;
+		}
+		var smallest = first;
+		while ((first = first.GetNext()).NotEqual(last))
+		{
+			if (comp(first.GetCurrent(), smallest.GetCurrent()))
+			{
+				smallest = first;
+			}
+		}
+		return smallest;
+	}
+
+	public static ListIterator<T> MaxElement<T>(
+		this ListIterator<T> first,
+		ListIterator<T> last,
+		Func<T, T, bool> comp
+	)
+	{
+		if (first.IsEqual(last))
+		{
+			return last;
+		}
+		var largest = first;
+		while ((first = first.GetNext()).NotEqual(last))
+		{
+			if (comp(largest.GetCurrent(), first.GetCurrent()))
+			{
+				largest = first;
+			}
+		}
+		return largest;
+	}
+
+	public static void MinMaxElement<T>(
+		this ListIterator<T> first,
+		ListIterator<T> last,
+		Func<T, T, bool> comp,
+		out ListIterator<T> min,
+		out ListIterator<T> max
+	)
+	{
+		if (first.IsEqual(last))
+		{
+			min = last;
+			max = last;
+		}
+		min = first;
+		max = first;
+		while ((first = first.GetNext()).NotEqual(last))
+		{
+			if (comp(first.GetCurrent(), min.GetCurrent()))
+			{
+				min = first;
+			}
+			if (comp(max.GetCurrent(), first.GetCurrent()))
+			{
+				max = first;
+			}
+		}
+	}
+
+	public static bool LexicographicalCompare<T>(
+		this ListIterator<T> first1,
+		ListIterator<T> last1,
+		ListIterator<T> first2,
+		ListIterator<T> last2,
+		Func<T, T, bool> comp
+	)
+	{
+		while (first1.NotEqual(last1))
+		{
+			if (first2.IsEqual(last2) || comp(first2.GetCurrent(), first1.GetCurrent()))
+			{
+				return false;
+			}
+			else if (comp(first1.GetCurrent(), first2.GetCurrent()))
+			{
+				return true;
+			}
+			first1 = first1.GetNext();
+			first2 = first2.GetNext();
+		}
+		return first2.NotEqual(last2);
+	}
+
+	public static bool NextPermutation<T>(
+		this ListIterator<T> first,
+		ListIterator<T> last,
+		Func<T, T, bool> comp
+	)
+	{
+		var i = last;
+		if (first.IsEqual(last) || first.IsEqual((i = i.GetPrev())))
+		{
+			return false;
+		}
+		while (true)
+		{
+			var ip1 = i;
+			if (comp((i = i.GetPrev()).GetCurrent(), ip1.GetCurrent()))
+			{
+				var j = last;
+				while (comp(i.GetCurrent(), (j = j.GetPrev()).GetCurrent()) == false)
+				{
+				}
+				Swap(i, j);
+				Reverse(ip1, last);
+				return true;
+			}
+			if (i.IsEqual(first))
+			{
+				Reverse(first, last);
+				return false;
+			}
+		}
+	}
+
+	public static bool PrevPermutation<T>(
+		this ListIterator<T> first,
+		ListIterator<T> last,
+		Func<T, T, bool> comp
+	)
+	{
+		var i = last;
+		if (first.IsEqual(last) || first.IsEqual(i = i.GetPrev()))
+		{
+			return false;
+		}
+		while (true)
+		{
+			var ip1 = i;
+			if (comp(ip1.GetCurrent(), (i = i.GetPrev()).GetCurrent()))
+			{
+				var j = last;
+				while (comp((j = j.GetPrev()).GetCurrent(), i.GetCurrent()) == false)
+				{
+				}
+				Swap(i, j);
+				Reverse(ip1, last);
+				return true;
+			}
+			if (i.IsEqual(first))
+			{
+				Reverse(first, last);
+				return false;
+			}
+		}
 	}
 }
