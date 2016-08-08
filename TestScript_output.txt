@@ -1,0 +1,91 @@
+advance 1 from begin: 2
+distance from first to last: 4
+all even?: False
+all positive?: True
+any > 10?: False
+any == 2?: True
+none == 2?: False
+none > 10?: True
+foreach: 1 2 3 4 
+find 2 at index: 1
+first even at index: 1
+first not even at index: 0
+end of [2,3] at index: 1
+first of [2,3] at index: 1
+adjacents at index: 4
+count 2s: 1
+count evens: 2
+mismatch with [1, 3, 3, 4] at: 2, 3
+equal [1, 3, 2, 3]? False
+equal [1, 2, 2, 3]? False
+is permutation of [3, 3, 1, 2]? False
+is permutation of [3, 2, 1, 2]? False
+search found [2, 3] at index: 1
+search 2 2s found at index: 4
+copy first two returns iterator at index 2, arr2 now: [1, 2, 0, 0]
+copyN first three returns iterator at index 3, arr2 now: [1, 2, 2, 0]
+copy evens returns iterator at index 2, arr2 now: [2, 2, 0, 0]
+copy backward middle two returns iterator at index 2, arr2 now: [0, 0, 2, 2]
+swap middle two returns iterator at index 3, arr now: [1, 0, 0, 3], arr2 now: [0, 2, 2, 0]
+swap iterator at index 0 with iterator at index 1, arr now: [2, 1, 2, 3]
+transform by doubling returns index 4, arr now: [2, 4, 4, 6]
+transform by multiplying with self returns index 4, arr now: [1, 4, 4, 9]
+replace 2 with 20 [1, 20, 20, 3]
+replace evens with 200 returns iterator at index 4, arr now: [1, 200, 200, 3]
+unique returns index 3, arr now: [1, 2, 3, 3]
+unique copy returns index 3, arr now: [1, 2, 2, 3], arr2 now: [1, 2, 3, 0]
+reverse: [3, 2, 2, 1]
+reverse copy returns index: 4, arr now: [1, 2, 2, 3], arr2 now: [3, 2, 2, 1]
+rotate around second 2, arr now: [2, 3, 1, 2]
+rotate copy around second 2 returns index: 4, arr now: [1, 2, 2, 3], arr2 now: [2, 3, 1, 2]
+some random shuffles: [3, 2, 1, 2], [3, 2, 1, 2]
+arr is partitioned by odd/even? False, by <= 2? True
+partition by odd/even returns index: 2, arr now: [2, 2, 1, 3]
+partition copy by odd/even returns indexes: 2, 2, arr now: [1, 2, 2, 3], arr2 now: [2, 2, 0, 0], arr3 now: [1, 3, 0, 0]
+partition point for <= 2 returns index: 2
+sorted backwards: [3, 2, 2, 1]
+stable sorted backwards: [3, 2, 2, 1]
+partial sorted backwards up to index 2: [3, 2, 2, 1]
+is array sorted: True
+[1, 3, 2, 4] is sorted until: 2
+NthElement 2 on [1, 3, 2, 4]: [1, 2, 3, 4]
+lower bound of 2 at index: 1
+upper bound of 2 at index: 3
+equal range of 2 from index 1 to 3
+binary search finds 2? True
+binary search finds 9? False
+[1, 2, 2, 3] merged with [1, 3, 3, 4] returns 8 result: [1, 1, 2, 2, 3, 3, 3, 4]
+[1, 2, 2, 3, 1, 3, 3, 4] in-place merged: [1, 1, 2, 2, 3, 3, 3, 4]
+[1, 2, 2, 3] includes [2, 3]? True
+union of [1, 2, 2, 3] and [1, 3, 3, 4] returns index 6 result: [1, 2, 2, 3, 3, 4, 0, 0]
+intersection of [1, 2, 2, 3] and [1, 3, 3, 4] returns index 2 result: [1, 3, 0, 0, 0, 0, 0, 0]
+difference of [1, 2, 2, 3] and [1, 3, 3, 4] returns index 2 result: [2, 2, 0, 0, 0, 0, 0, 0]
+symmetric difference of [1, 2, 2, 3] and [1, 3, 3, 4] returns index 4 result: [2, 2, 3, 4, 0, 0, 0, 0]
+push heap of [4, 2, 3, 1, 5, 0, 0, 0]: [5, 4, 3, 1, 2, 0, 0, 0]
+pop heap of [4, 2, 3, 1]: [3, 2, 1, 4]
+make heap of [1, 2, 3, 4]: [4, 2, 3, 1]
+sort heap of [4, 2, 3, 1]: [1, 2, 3, 4]
+[4, 2, 3, 1] is heap? True
+[4, 2, 3, 1] is heap until 4
+min element: 0
+max element: 3
+min/max elements: 0, 3
+lexicographical compare of [1, 2, 2, 3] and [0, 0, 0, 0]: False, reverse: True
+permutations of [1, 2, 2, 3]:
+    [1, 2, 3, 2]
+    [1, 3, 2, 2]
+    [2, 1, 2, 3]
+    [2, 1, 3, 2]
+    [2, 2, 1, 3]
+    [2, 2, 3, 1]
+    [2, 3, 1, 2]
+    [2, 3, 2, 1]
+    [3, 1, 2, 2]
+    [3, 2, 1, 2]
+    [3, 2, 2, 1]
+prev permutations of [3, 2, 1]:
+    [3, 1, 2]
+    [2, 3, 1]
+    [2, 1, 3]
+    [1, 3, 2]
+    [1, 2, 3]
