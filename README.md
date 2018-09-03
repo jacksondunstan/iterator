@@ -58,6 +58,7 @@ To read about the making of this library, see the _Enumerables Without the Garba
 * [Part 5](https://jacksondunstan.com/articles/3515)
 * [Part 6](https://jacksondunstan.com/articles/3524)
 * [Part 7](https://jacksondunstan.com/articles/3541)
+* [Part 8](https://jacksondunstan.com/articles/4905)
 
 # License
 
