@@ -17,7 +17,7 @@ using NUnit.Framework;
 public class TestNativeArrayIterator
 {
 	private List<NativeArray<int>> nativeArrays;
-	private Random random;
+	private MonotonicRandom random;
 	private NativeArray<int> defaultArr;
 	private NativeArray<int> arr;
 	private NativeArray<int> arr2;
@@ -80,7 +80,7 @@ public class TestNativeArrayIterator
 	public void SetUp()
 	{
 		nativeArrays = new List<NativeArray<int>>();
-		random = new Random(123);
+		random = new MonotonicRandom();
 		defaultArr = CreateNativeArray(1, 2, 2, 3);
 		arr = CopyNativeArray(defaultArr);
 		arr2 = CreateEmptyNativeArray(arr.Length);
@@ -466,7 +466,7 @@ public class TestNativeArrayIterator
 	public void RandomShuffle()
 	{
 		arr.Begin().RandomShuffle(arr.End(), RandomIntLessThan);
-		Assert.That(arr, Is.EqualTo(new[] { 2, 2, 1, 3 }));
+		Assert.That(arr, Is.EqualTo(new[] { 2, 3, 2, 1 }));
 		arr.Begin().RandomShuffle(arr.End(), RandomIntLessThan);
 		Assert.That(arr, Is.EqualTo(new[] { 2, 2, 3, 1 }));
 	}

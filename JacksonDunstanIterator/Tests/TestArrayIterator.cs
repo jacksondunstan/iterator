@@ -11,7 +11,7 @@ using NUnit.Framework;
 
 public class TestArrayIterator
 {
-	private Random random;
+	private MonotonicRandom random;
 	private int[] defaultArr;
 	private int[] arr;
 	private int[] arr2;
@@ -38,7 +38,7 @@ public class TestArrayIterator
 	[SetUp]
 	public void SetUp()
 	{
-		random = new Random(123);
+		random = new MonotonicRandom();
 		defaultArr = new [] { 1, 2, 2, 3 };
 		arr = defaultArr.ToArray();
 		arr2 = new int[arr.Length];
@@ -415,7 +415,7 @@ public class TestArrayIterator
 	public void RandomShuffle()
 	{
 		arr.Begin().RandomShuffle(arr.End(), RandomIntLessThan);
-		Assert.That(arr, Is.EqualTo(new[] { 2, 2, 1, 3 }));
+		Assert.That(arr, Is.EqualTo(new[] { 2, 3, 2, 1 }));
 		arr.Begin().RandomShuffle(arr.End(), RandomIntLessThan);
 		Assert.That(arr, Is.EqualTo(new[] { 2, 2, 3, 1 }));
 	}
